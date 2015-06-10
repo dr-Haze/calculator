@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>CALCULATOR TEST</title>
+
+	<style>
+		*, *:before, *:after {
+			-webkit-box-sizing: border-box;
+			   -moz-box-sizing: border-box;
+					box-sizing: border-box;
+		}
+
+		html,body{
+			position: relative;
+			height: 100%;
+			min-height: 100%;
+			margin: 0;
+		}
+
+		body{
+			background-color: #C4C2C3;
+			font-family: sans-serif !important;
+		}
+
+		#overlay{
+			display: none;
+			width: 100%;
+			height: 100%;
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 1;
+			background-color: rgba(0,0,0,.5);
+		}
+
+		#calculator-wrapper{
+			position: fixed;
+			top: 50%;
+			right: -320px;
+			margin-top: -240px;
+			z-index: 9999;
+		}
+
+		#calculator-trigger{
+			-webkit-transition: opacity ease-in-out .1s !important;
+			   -moz-transition: opacity ease-in-out .1s !important;
+				-ms-transition: opacity ease-in-out .1s !important;
+				 -o-transition: opacity ease-in-out .1s !important;
+					transition: opacity ease-in-out .1s !important;
+		}
+
+		#calculator-container{
+			-webkit-transition: opacity ease-in-out .3s !important;
+			   -moz-transition: opacity ease-in-out .3s !important;
+				-ms-transition: opacity ease-in-out .3s !important;
+				 -o-transition: opacity ease-in-out .3s !important;
+					transition: opacity ease-in-out .3s !important;
+		}
+
+		#calculator-trigger{
+			position: absolute;
+			top: 50%;
+			left: -30px;
+			padding: 3px 7px 7px 6px;
+			margin-top: -15px;
+			opacity: 0;
+			background-color: #81FFA3;
+			font-size: 30px;
+			line-height: 20px;
+			font-weight: 800;
+			color: #fff;
+			cursor: pointer;
+		}
+
+		#calculator-container{
+			visibility: hidden;
+			opacity: 0;
+		}
+
+		#calculator-container-inner{
+			width: 320px;
+			height: 480px;
+			padding: 30px 20px 20px;
+			background-color: #fff;
+		}
+
+		#button-close{
+			position: absolute;
+			top: 0;
+			right: 0;
+			padding: 2px 4px 0 5px;
+			background-color: #FF5159;
+			font-weight: 800;
+			color: #fff;
+			cursor: pointer;
+		}
+
+		.active{
+			opacity: 1 !important;
+		}
+
+		.calculator-container-form{
+			margin-bottom: 10px;
+		}
+
+		.form-group p{
+			margin: 0;
+			margin-bottom: 5px;
+		}
+	</style>
+</head>
+<body>
+	<div id="overlay"></div>
+
+	<div id="calculator-wrapper">
+		<span id="calculator-trigger" class="active">&lt;</span>
+
+		<div id="calculator-container">
+			<span id="button-close">X</span>
+
+			<div id="calculator-container-inner">
+				<div class="form-group">
+					<p>Выберите город:</p>
+					<ul id="city-value" class="form-value">
+						<li class="label label-default" data-city="1">Симферополь</li>
+						<li class="label label-default" data-city="2">Севастополь</li>
+						<li class="label label-default" data-city="3">Ялта и ЮБК</li>
+						<li class="label label-default" data-city="4">Евпатория</li>
+						<li class="label label-default" data-city="5">Керчь</li>
+					</ul>
+				</div>
+
+				<div class="form-group">
+					<p>Выберите тип ремонта:</p>
+					<ul id="type-value" class="form-value">
+						<li class="label label-default" data-type="1" data-cost>Косметический</li>
+						<li class="label label-default" data-type="2" data-cost>Капитальный</li>
+						<li class="label label-default" data-type="3" data-cost>Новострой</li>
+						<li class="label label-default" data-type="4" data-cost>Премиум</li>
+					</ul>
+				</div>
+
+				<form id="area-value-form" class="form-group">
+					<p>Введите площадь помещения:</p>
+					<input id="area-value" type="number" name="areaValue" class="form-control areaValue" value="" placeholder="Не менее 25 кв/м">
+				</form>
+
+				<div id="calculate-price">
+					<span class="form-control form-button">Выполнить расчет</span>
+					<span id="calculated-result">0</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/jquery.validate.min.js"></script>
+
+	<script>
+		$(document).ready(function() {
+			// CALCULATOR VALIDATION
+
+			$.validator.setDefaults({
+				validClass: 'valid',
+				errorClass: 'invalid'
+			});
+
+			$('#area-value-form').validate({
+				onkeyup: function(element) {
+					$(element).valid();
+				},
+				messages: {
+					areaValue: {
+						required: 'Заполните это поле.',
+						digits: 'Вводите только цифры.',
+						min: 'Минимальная площадь 25 кв./м.'
+					}
+				}
+			});
+
+			$.validator.addClassRules({
+				areaValue: {
+					required: true,
+					digits: true,
+					min: 25
+				}
+			});
+
+			// END CALCULATOR VALIDATION
+
+			// CALCULATOR LOGIC
+
+			function calculateResult() {
+				var cityValue = parseInt($('#city-value').find('li.selected').attr('data-city'), 10),
+					typeValue = parseInt($('#type-value').find('li.selected').attr('data-type'), 10),
+					costAttribute = $('#type-value').find('li.selected'),
+					areaValue = parseInt($('#area-value').val(), 10),
+					costValue,
+					totalSumm;
+
+				if (cityValue === 1) {
+					if (typeValue === 1) {
+						costAttribute.attr('data-cost', '2200'); // ЦЕНА ДЛЯ СИМФЕРОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 2) {
+						costAttribute.attr('data-cost', '3400'); // ЦЕНА ДЛЯ СИМФЕРОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 3) {
+						costAttribute.attr('data-cost', '3000'); // ЦЕНА ДЛЯ СИМФЕРОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} if (typeValue === 4) {
+						costAttribute.attr('data-cost', '6200'); // ЦЕНА ДЛЯ СИМФЕРОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					}
+				}
+
+				if (cityValue === 2) {
+					if (typeValue === 1) {
+						costAttribute.attr('data-cost', '2500'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ СЕВАСТОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 2) {
+						costAttribute.attr('data-cost', '3700'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ СЕВАСТОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 3) {
+						costAttribute.attr('data-cost', '3400'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ СЕВАСТОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} if (typeValue === 4) {
+						costAttribute.attr('data-cost', '6700'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ СЕВАСТОПОЛЯ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					}
+				}
+
+				if (cityValue === 3) {
+					if (typeValue === 1) {
+						costAttribute.attr('data-cost', '2500'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЮБК
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 2) {
+						costAttribute.attr('data-cost', '3700'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЮБК
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 3) {
+						costAttribute.attr('data-cost', '3400'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЮБК
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} if (typeValue === 4) {
+						costAttribute.attr('data-cost', '6700'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЮБК
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					}
+				}
+
+				if (cityValue === 4) {
+					if (typeValue === 1) {
+						costAttribute.attr('data-cost', '2600'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ КЕРЧИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 2) {
+						costAttribute.attr('data-cost', '3800'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ КЕРЧИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 3) {
+						costAttribute.attr('data-cost', '3500'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ КЕРЧИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} if (typeValue === 4) {
+						costAttribute.attr('data-cost', '6800'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ КЕРЧИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					}
+				}
+
+				if (cityValue === 5) {
+					if (typeValue === 1) {
+						costAttribute.attr('data-cost', '2400'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЕВПАТОРИИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 2) {
+						costAttribute.attr('data-cost', '3600'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЕВПАТОРИИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} else if (typeValue === 3) {
+						costAttribute.attr('data-cost', '3300'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЕВПАТОРИИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					} if (typeValue === 4) {
+						costAttribute.attr('data-cost', '6600'); // ПОВЫШЕНИЕ ЦЕНЫ ДЛЯ ЕВПАТОРИИ
+						costValue = parseInt(costAttribute.attr('data-cost'), 10);
+					}
+				}
+
+				if (($.isNumeric(costValue)) && ($.isNumeric(areaValue))) {
+					totalSumm = costValue * areaValue;
+					$('#calculated-result').html(totalSumm);
+				}
+
+				console.log(cityValue, costValue, areaValue, totalSumm);
+			}
+
+			$('.form-value li').on('click', function() {
+				$(this).parent().find('.selected').removeClass('selected');
+				$(this).addClass('selected');
+			});
+
+			$('#calculate-price .form-button').on('click', function(e) {
+				e.stopPropagation();
+				calculateResult();
+			});
+
+			$('#calculator-container-inner').on('click keyup', calculateResult);
+
+			// END CALCULATOR LOGIC
+
+			// CALCULATOR VIEW
+
+			var wrapper = $('#calculator-wrapper'),
+				trigger = $('#calculator-trigger'),
+				calculator = $('#calculator-container'),
+				calculatorInner = $('#calculator-container-inner'),
+				overlay = $('#overlay');
+
+			function hideCalculator() {
+				calculator.removeClass('active');
+				setTimeout(fadeOutCalculator, 300);
+			}
+
+			function fadeInCalculator() {
+				wrapper.css({
+					right: 50 + '%',
+					marginRight: -160
+				});
+				calculator.css('visibility', 'visible').addClass('active');
+			}
+
+			function fadeOutCalculator() {
+				wrapper.css({
+					right: -320,
+					marginRight: 0
+				});
+				calculator.removeAttr('style');
+				trigger.addClass('active');
+				overlay.fadeOut(350);
+			}
+
+			$('body').on('click', function() {
+				if (calculator.hasClass('active')) {
+					hideCalculator();
+				} return;
+			});
+
+			$('#button-close').on('click', function() {
+				hideCalculator();
+			});
+
+			trigger.on('click', function(e) {
+				e.stopPropagation();
+				trigger.removeClass('active');
+				overlay.fadeIn(250);
+				setTimeout(fadeInCalculator, 200);
+			});
+
+			calculatorInner.on('click', function(e) {
+				e.stopPropagation();
+			});
+
+			// END CALCULATOR VIEW
+		});
+	</script>
+</body>
+</html>
