@@ -5,10 +5,16 @@
 	<title>CALCULATOR TEST</title>
 
 	<style>
-		*, *:before, *:after {
+		#calculator-wrapper *,
+		#calculator-wrapper *:before,
+		#calculator-wrapper *:after {
 			-webkit-box-sizing: border-box;
 			   -moz-box-sizing: border-box;
 					box-sizing: border-box;
+			-webkit-user-select: none;
+			   -moz-user-select: none;     
+				-ms-user-select: none;      
+					user-select: none;
 		}
 
 		html,body{
@@ -58,19 +64,34 @@
 					transition: opacity ease-in-out .3s !important;
 		}
 
+		#calculator-container small{
+			color: #FF5159;
+		}
+
 		#calculator-trigger{
+			display: block;
 			position: absolute;
+			width: 1.3em;
 			top: 50%;
-			left: -30px;
-			padding: 3px 7px 7px 6px;
-			margin-top: -15px;
+			left: -27px;
+			padding: 7px;
+			margin-top: -170px;
 			opacity: 0;
-			background-color: #81FFA3;
-			font-size: 30px;
-			line-height: 20px;
-			font-weight: 800;
+			background-color: #36B1BC;
+			font-size: 1.3em;
+			line-height: 1.05em;
+			font-weight: 100;
+			word-break: break-all;
 			color: #fff;
 			cursor: pointer;
+		}
+
+		#calculator-trigger:hover{
+			background-color: #33a6b1;
+		}
+
+		#calculator-trigger:active{
+			background-color: #309DA8;
 		}
 
 		#calculator-container{
@@ -78,35 +99,160 @@
 			opacity: 0;
 		}
 
-		#calculator-container-inner{
-			width: 320px;
-			height: 480px;
-			padding: 30px 20px 20px;
+		#calculator-header,
+		#calculator-container-inner,
+		#calculate-price{
+			width: 100%;
+			max-width: 320px;
+			padding: 15px;
 			background-color: #fff;
+		}
+
+		#calculator-header,
+		#calculator-container-inner{
+			border-bottom: 1px solid rgba(0,0,0,.1);
+		}
+
+		#calculator-header p{
+			padding-right: 38px;
+			margin: 0;
+			font-size: 20px;
+			cursor: default;
 		}
 
 		#button-close{
 			position: absolute;
-			top: 0;
-			right: 0;
-			padding: 2px 4px 0 5px;
+			top: 15px;
+			right: 15px;
+			padding: 4px 6px 2px 6px;
 			background-color: #FF5159;
-			font-weight: 800;
+			font-weight: 400;
 			color: #fff;
 			cursor: pointer;
 		}
 
-		.active{
-			opacity: 1 !important;
+		#button-close:hover{
+			background-color: #e0474e;
 		}
 
-		.calculator-container-form{
-			margin-bottom: 10px;
+		#button-close:active{
+			background-color: #C73D43;
 		}
 
-		.form-group p{
+		#calculator-container-inner{
+			/*height: 480px;*/
+		}
+
+		#calculator-container-inner .form-group{
+			margin-bottom: 15px;
+			cursor: default;
+		}
+
+		#calculator-container-inner #area-value-form{
+			margin-bottom: 0;
+		}
+
+		#calculator-container-inner .form-header,
+		#calculate-price .form-header{
 			margin: 0;
 			margin-bottom: 5px;
+			text-align: left;
+		}
+
+		#calculator-container-inner .form-value{
+			margin: 0;
+			padding: 0;
+			list-style-type: none;
+			font-size: 0;
+			line-height: 0;
+			text-align: center;
+		}
+
+		#calculator-container-inner .form-value li{
+			display: inline-block;
+			padding: 5px 10px;
+			margin: 0 2px 4px;
+			background-color: rgba(0,0,0,.05);
+			font-size: 14px;
+			line-height: 14px;
+			line-height: normal;
+			cursor: pointer;
+		}
+
+		#calculator-container-inner .form-value li:hover{
+			background-color: rgba(0,0,0,.08);
+		}
+
+		#calculator-container-inner .form-value li.selected{
+			color: #fff;
+			background-color: #36B1BC;
+		}
+
+		#calculator-container-inner input{
+			display: block;
+			position: relative;
+			max-width: 90px;
+			padding: 5px;
+			margin: 10px auto 0;
+			border: 2px solid #36B1BC;
+			outline: none;
+			font-size: 24px;
+			text-align: center;
+			color: #36B1BC;
+			-webkit-user-select: auto;
+			   -moz-user-select: auto;
+				-ms-user-select: auto;
+					user-select: auto;
+		}
+
+		#calculator-container-inner input.invalid{
+			color: #FF5159;
+			border-color: #FF5159;
+		}
+
+		#calculate-price{
+			position: relative;
+			text-align: center;
+			cursor: default;
+		}
+
+		#calculate-price .form-header{
+			margin-bottom: 15px;
+		}
+
+		#complete-message{
+			display: none;
+			position: absolute;
+			top: 15px;
+			right: 15px;
+		}
+
+		#calculated-result{
+			padding: 5px;
+			font-size: 30px;
+			color: #36B1BC;
+		}
+
+		#calculate-price .form-button{
+			display: block;
+			width: 100%;
+			padding: 5px;
+			margin-top: 20px;
+			background-color: #36B1BC;
+			color: #fff;
+			cursor: pointer;
+		}
+
+		#calculate-price .form-button:hover{
+			background-color: #33a6b1;
+		}
+
+		#calculate-price .form-button:active{
+			background-color: #309DA8;
+		}
+
+		#calculator-wrapper .active{
+			opacity: 1 !important;
 		}
 	</style>
 </head>
@@ -114,14 +260,17 @@
 	<div id="overlay"></div>
 
 	<div id="calculator-wrapper">
-		<span id="calculator-trigger" class="active">&lt;</span>
+		<span id="calculator-trigger" class="active">КАЛЬКУЛЯТОР</span>
 
 		<div id="calculator-container">
-			<span id="button-close">X</span>
+			<div id="calculator-header">
+				<span id="button-close">X</span>
+				<p>Расчитайте стоимость<br />ремонта.</p>
+			</div>
 
 			<div id="calculator-container-inner">
 				<div class="form-group">
-					<p>Выберите город:</p>
+					<p class="form-header">Выберите город:</p>
 					<ul id="city-value" class="form-value">
 						<li class="label label-default" data-city="1">Симферополь</li>
 						<li class="label label-default" data-city="2">Севастополь</li>
@@ -132,7 +281,7 @@
 				</div>
 
 				<div class="form-group">
-					<p>Выберите тип ремонта:</p>
+					<p class="form-header">Выберите тип ремонта:</p>
 					<ul id="type-value" class="form-value">
 						<li class="label label-default" data-type="1" data-cost>Косметический</li>
 						<li class="label label-default" data-type="2" data-cost>Капитальный</li>
@@ -142,14 +291,15 @@
 				</div>
 
 				<form id="area-value-form" class="form-group">
-					<p>Введите площадь помещения:</p>
-					<input id="area-value" type="number" name="areaValue" class="form-control areaValue" value="" placeholder="Не менее 25 кв/м">
+					<p class="form-header">Введите площадь помещения:<br /><small>Не менее 25 кв/м</small></p>
+					<input id="area-value" type="number" name="areaValue" max="999" class="form-control areaValue" value="" placeholder="">
 				</form>
-
-				<div id="calculate-price">
-					<span class="form-control form-button">Выполнить расчет</span>
-					<span id="calculated-result">0</span>
-				</div>
+			</div>
+			<div id="calculate-price">
+				<p class="form-header">Ваш результат:</p>
+				<span id="complete-message"><small>Заполните все поля.</small></span>
+				<span id="calculated-result">0 ₽</span><br />
+				<span class="form-control form-button">РАСЧИТАТЬ</span>
 			</div>
 		</div>
 	</div>
@@ -159,36 +309,6 @@
 
 	<script>
 		$(document).ready(function() {
-			// CALCULATOR VALIDATION
-
-			$.validator.setDefaults({
-				validClass: 'valid',
-				errorClass: 'invalid'
-			});
-
-			$('#area-value-form').validate({
-				onkeyup: function(element) {
-					$(element).valid();
-				},
-				messages: {
-					areaValue: {
-						required: 'Заполните это поле.',
-						digits: 'Вводите только цифры.',
-						min: 'Минимальная площадь 25 кв./м.'
-					}
-				}
-			});
-
-			$.validator.addClassRules({
-				areaValue: {
-					required: true,
-					digits: true,
-					min: 25
-				}
-			});
-
-			// END CALCULATOR VALIDATION
-
 			// CALCULATOR LOGIC
 
 			function calculateResult() {
@@ -279,12 +399,14 @@
 					}
 				}
 
-				if (($.isNumeric(costValue)) && ($.isNumeric(areaValue))) {
+				if (($.isNumeric(costValue)) && ($.isNumeric(areaValue)) && ($('#area-value').hasClass('valid'))) {
 					totalSumm = costValue * areaValue;
-					$('#calculated-result').html(totalSumm);
+					// $(this).fadeOut(350);
+					$('#complete-message').fadeOut(350);
+					$('#calculated-result').html(totalSumm + ' ₽');
+				} else {
+					$('#complete-message').fadeIn(350);
 				}
-
-				console.log(cityValue, costValue, areaValue, totalSumm);
 			}
 
 			$('.form-value li').on('click', function() {
@@ -295,11 +417,50 @@
 			$('#calculate-price .form-button').on('click', function(e) {
 				e.stopPropagation();
 				calculateResult();
+				$('#calculator-container-inner').on('click keyup', function() {
+					if ($('#area-value').val() >= 25) {
+						$('#complete-message').fadeOut(350);
+						calculateResult();
+					} else {
+						$('#complete-message').fadeIn(350);
+					}
+				});
 			});
 
-			$('#calculator-container-inner').on('click keyup', calculateResult);
-
 			// END CALCULATOR LOGIC
+
+			// CALCULATOR VALIDATION
+
+			$.validator.setDefaults({
+				validClass: 'valid',
+				errorClass: 'invalid'
+			});
+
+			$('#area-value-form').validate({
+				onkeyup: function(element) {
+					$(element).valid();
+				},
+				messages: {
+					areaValue: {
+						required: 'Заполните это поле.',
+						digits: 'Вводите только цифры.',
+						min: 'Минимальная площадь 25 кв./м.'
+					}
+				},
+				errorPlacement: function(error, element){
+					// HIDE ERROR MESSAGES
+				}
+			});
+
+			$.validator.addClassRules({
+				areaValue: {
+					required: true,
+					digits: true,
+					min: 25
+				}
+			});
+
+			// END CALCULATOR VALIDATION
 
 			// CALCULATOR VIEW
 
@@ -346,10 +507,11 @@
 				e.stopPropagation();
 				trigger.removeClass('active');
 				overlay.fadeIn(250);
+				$('#calculate-price .form-button').fadeIn(350);
 				setTimeout(fadeInCalculator, 200);
 			});
 
-			calculatorInner.on('click', function(e) {
+			$('#calculator-container-inner, #calculate-header, #calculate-price').on('click', function(e) {
 				e.stopPropagation();
 			});
 
